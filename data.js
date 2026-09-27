@@ -43,6 +43,87 @@ export const days = [
     family: '随身包保留两套宝宝换洗衣物、尿布、饮水与安抚物，避免托运行李后临时找不到。', confirm: '返程航班、机场 / 车站、送站师傅及出发时间全部二次核对，不用“当地时间”含糊约定。' }
 ];
 
+export const travelEstimateNote = '以下为行程规划粗估，并非实时导航或司机确认值；只计车辆行驶，不含游览、用餐、休息、排队、安检及拥堵。实际耗时可能超过区间上限，出发前请按酒店、景区入口与道路开放重新核对。';
+
+export const travelEstimates = {
+  1: {
+    note: '未提供出发城市和航班 / 车次，不估算跨城自驾；接送按乌鲁木齐机场 / 车站至市区酒店粗估。',
+    legs: [
+      { from: '出发地', to: '乌鲁木齐', mode: 'other', minutes: null, note: '航班 / 铁路时长以实际票务为准，不计入自驾。' },
+      { from: '乌鲁木齐机场 / 车站', to: '乌鲁木齐市区酒店', mode: 'transfer', minutes: [30, 90], note: '接站车程；机场、车站和酒店位置不同，耗时会有差异。' }
+    ]
+  },
+  2: {
+    note: '本日估算假设“原始胡杨林”指精河托托镇、木特塔尔沙漠沿线胡杨林，而非木垒胡杨林。须先向师傅确认定位；若不是同一地点，下列分段与合计均不适用。',
+    legs: [
+      { from: '乌鲁木齐', to: '原始胡杨林', mode: 'drive', minutes: [240, 300], note: '暂按精河托托镇沿线入口估算，具体胡杨林定位待确认。' },
+      { from: '原始胡杨林', to: '木特塔尔沙漠', mode: 'drive', minutes: [30, 60], note: '暂按同一景区周边道路估算，不含穿越体验或沙漠游玩。' },
+      { from: '木特塔尔沙漠', to: '赛里木湖东门', mode: 'drive', minutes: [120, 180], note: '含返回主路的时间；最终到酒店的车程以订单地址为准。' }
+    ]
+  },
+  3: {
+    note: '环湖车程与离开景区后的转场分别计算，不重复累计；本日再加游览会较长，应减少停靠而非夜间赶路。',
+    legs: [
+      { from: '赛里木湖东门', to: '赛里木湖环湖后出入口', mode: 'drive', minutes: [120, 180], note: '约 90 km 环湖道路的纯行车粗估，不含 S 弯、灯塔、松树头停留；须确认允许自驾入园。' },
+      { from: '赛里木湖环湖后出入口', to: '克拉玛依', mode: 'drive', minutes: [300, 360], note: '按常用高速转场粗估，具体出口和酒店位置会影响车程。' }
+    ]
+  },
+  4: {
+    note: '前往“喀纳斯一进”须先到贾登峪停车换乘。自驾合计不含往返区间车及三湾游览；转场与入园安排偏紧，请提前确认末班车。',
+    legs: [
+      { from: '克拉玛依', to: '贾登峪门票站', mode: 'drive', minutes: [360, 420], note: '含进入贾登峪的山路；市区和酒店短途接送另留时间。' },
+      { from: '贾登峪门票站', to: '喀纳斯一进 · 换乘中心', mode: 'shuttle', minutes: [60, 90], note: '景区区间车，不默认允许私家车进入；不含候车和游览。' },
+      { from: '喀纳斯换乘中心', to: '贾登峪门票站', mode: 'shuttle', minutes: [60, 90], note: '游览后乘区间车返回，再前往贾登峪住宿。' }
+    ]
+  },
+  5: {
+    note: '二进喀纳斯后需先返回贾登峪取车，再去禾木。若酒店位于吉克普林而非禾木村，须按实际地址重新确认车程及是否乘坐入村区间车。',
+    legs: [
+      { from: '贾登峪门票站', to: '喀纳斯二进 · 换乘中心', mode: 'shuttle', minutes: [60, 90], note: '二次入园的单程区间车，不含排队及湖畔漫步。' },
+      { from: '喀纳斯换乘中心', to: '贾登峪门票站', mode: 'shuttle', minutes: [60, 90], note: '出园取车；不是从喀纳斯湖直接自驾到禾木。' },
+      { from: '贾登峪门票站', to: '禾木门票站', mode: 'drive', minutes: [60, 90], note: '山路转场，不含抵达后的景区接驳。' },
+      { from: '禾木门票站', to: '禾木村', mode: 'shuttle', minutes: [60, 90], note: '仅在需要入村换乘时适用；村内公交、步行及前往酒店另计。' }
+    ]
+  },
+  6: {
+    note: '原图保留的乌希里克、通巴森林、托勒海特大草原排列不能直接当作禾木出发的导航顺序；停靠坐标和分段时长待师傅确认，暂并入阿禾公路整段，不虚构逐点时间或重复相加。',
+    legs: [
+      { from: '禾木村 / 酒店', to: '禾木出发停车点', mode: 'shuttle', minutes: null, note: '村内外酒店、车辆停放点和当季通行方式不同，离村接驳待确认。' },
+      { from: '禾木出发停车点', to: '将军山（经阿禾公路）', mode: 'drive', minutes: [300, 420], note: '整段规划粗估；沿线含托勒海特大草原、通巴森林、乌希里克等景观，不含停车拍照。山区限速、雨雪或管制可能显著延长车程。' },
+      { from: '将军山', to: '阿勒泰市区酒店', mode: 'drive', minutes: [15, 30], note: '不含缆车、晚间活动及游览；具体酒店位置待订单确认。' }
+    ]
+  },
+  7: {
+    note: 'S21 沙漠公路是途经道路，不是独立目的地；从阿勒泰到乌鲁木齐合并计时，避免把同一段高速重复相加。',
+    legs: [
+      { from: '阿勒泰', to: '乌鲁木齐（经 S21 沙漠公路）', mode: 'drive', minutes: [300, 360], note: '按市区到市区的整段粗估，包含进出高速；服务区休息、加油和用餐另计。' }
+    ]
+  },
+  8: {
+    note: '只估算市区酒店到机场 / 车站的送站车程，不包含值机、安检、候车及跨城返程；集合时刻以实际票务倒推并预留余量。',
+    legs: [
+      { from: '乌鲁木齐市区酒店', to: '乌鲁木齐机场 / 车站', mode: 'transfer', minutes: [30, 90], note: '送站车程，出发前按具体航站楼 / 车站核对。' },
+      { from: '乌鲁木齐', to: '温暖的家', mode: 'other', minutes: null, note: '未提供返程目的地；航班 / 铁路时长以实际票务为准。' }
+    ]
+  }
+};
+
+export const travelModes = { drive: '自驾', transfer: '接送', shuttle: '景区接驳', other: '航班 / 铁路' };
+
+export function formatTravelDuration(minutes) {
+  if (minutes === null) return '待确认';
+  const [min, max] = minutes;
+  return max < 120 ? `约 ${min}–${max} 分钟` : `约 ${min / 60}–${max / 60} 小时`;
+}
+
+export function drivingSummary(dayId) {
+  const legs = travelEstimates[dayId].legs.filter(leg => leg.mode === 'drive' || leg.mode === 'transfer');
+  if (!legs.length || legs.some(leg => leg.minutes === null)) return '自驾时长待确认';
+  const total = legs.reduce(([min, max], leg) => [min + leg.minutes[0], max + leg.minutes[1]], [0, 0]);
+  const label = legs.every(leg => leg.mode === 'transfer') ? '接送' : '自驾';
+  return `${label}${formatTravelDuration(total)}`;
+}
+
 export const categories = [
   { id: 'documents', name: '证件与预订', icon: 'passport-line', note: '重要证件随身，不放托运行李' },
   { id: 'clothes', name: '保暖与穿搭', icon: 't-shirt-2-line', note: '贴身层 + 保暖层 + 防风层' },
