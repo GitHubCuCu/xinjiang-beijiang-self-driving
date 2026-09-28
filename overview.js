@@ -1,9 +1,10 @@
-import { days, destinations, images, drivingSummary } from './data.js';
+import { days, destinations, images, drivingSummary, adventureBook } from './data.js';
 import { storage } from './store.js';
 import { icon, escape, pageHeading, progress, buttonClass, dayDate, dateRange } from './ui.js';
 
 export function renderOverview() {
   const stats = storage.stats();
+  const adventure = storage.adventureStats();
   const insights = [
     { icon: 'calendar-check-line', value: '8 天 7 晚', text: '从乌鲁木齐出发，再回到这里', color: 'bg-[#edf1e4] text-[#7b905f]' },
     { icon: 'group-line', value: '3 大 1 小', text: '50 岁+ · 两位 30 岁 · 2 岁宝宝', color: 'bg-[#f7efdf] text-[#b29b62]' },
@@ -32,6 +33,7 @@ export function renderOverview() {
       </div>
     </section>
     <section class="my-6 grid grid-cols-2 gap-3 lg:grid-cols-4" aria-label="旅行信息">${insights.map(item => `<${item.href ? `a href="${item.href}"` : 'div'} class="flex items-center gap-3 rounded-xl border border-[#e6e9e0] bg-white px-4 py-5 ${item.href ? 'hover:border-[#b7c4a7]' : ''}"><span class="grid h-10 w-10 shrink-0 place-items-center rounded-xl text-xl ${item.color}">${icon(item.icon)}</span><div><h3 class="text-[13px] font-semibold sm:text-sm">${item.value}</h3><p class="mt-1 text-[10px] leading-4 text-[#9aa38f]">${item.text}</p></div></${item.href ? 'a' : 'div'}>`).join('')}</section>
+    <section class="my-6 flex flex-col gap-4 rounded-2xl border border-[#d9d7c4] bg-[#f6f2e5] p-5 sm:flex-row sm:items-center sm:p-6"><span class="grid h-11 w-11 shrink-0 place-items-center rounded-full bg-[#ece7d2] text-xl text-[#806528]">${icon('book-open-line')}</span><div class="flex-1"><p class="text-[10px] tracking-[0.18em] text-[#806528]">A MISSING PAGE · 虚构故事包装</p><h2 class="mt-1 text-base font-semibold">${escape(adventureBook.title)}：${escape(adventureBook.subtitle)}</h2><p class="mt-2 text-[11px] leading-6 text-[#71816a]">每一站都有可核验的历史小故事；每天只留 20–40 分钟调查一个谜团。当前：实地完成 ${adventure.field}/8 章，阅读替代 ${adventure.reading}/8 章，线索 ${adventure.clues}/8。不顺路或闭馆时可以读，不必补做。</p></div><a href="#adventure/${adventure.next}" class="flex min-h-11 shrink-0 items-center justify-center gap-2 rounded-lg border border-[#c9b98f] bg-white px-4 py-2.5 text-xs font-medium text-[#806528] hover:bg-[#faf8ef]">继续探索 ${icon('arrow-right-line')}</a></section>
     <section class="rounded-2xl border border-[#e4e8dc] bg-white px-5 py-6 sm:px-6">
       <div class="flex items-center justify-between"><div class="flex items-center gap-3"><span class="grid h-8 w-8 place-items-center rounded-lg bg-[#f1f4e9] text-[#7c9269]">${icon('route-line')}</span><h2 class="text-base font-semibold">8 天，把北疆的秋天串起来</h2></div><a href="#itinerary" class="hidden items-center gap-2 text-xs text-[#81926d] hover:text-[#3d633e] sm:flex">查看完整行程 ${icon('arrow-right-line')}</a></div>
       <div class="relative mt-6 grid grid-cols-4 gap-y-6 lg:grid-cols-8"><div class="absolute left-[6%] right-[6%] top-[20px] hidden border-t border-dashed border-[#cdd7bd] lg:block"></div>${days.map((day, index) => `<a href="#itinerary/${day.id}" class="group relative flex flex-col items-center px-1 text-center"><span class="relative mb-3 grid h-10 w-10 place-items-center rounded-full border-4 border-white text-sm transition-transform group-hover:-translate-y-1 ${index === 0 || index === 7 ? 'bg-[#e7eedc] text-[#577745]' : 'bg-[#f2f4ec] text-[#92a47f]'}">${icon(day.icon)}</span><span class="text-[9px] tracking-wider text-[#99a687]">D${day.id} ${storage.get().startDate ? `· ${dayDate(day.id)}` : ''}</span><strong class="mt-1 text-xs font-medium text-[#526348]">${day.city}</strong><span class="mt-1 text-[9px] leading-4 text-[#a7ae9f]">${day.short}</span><span class="mt-2 rounded-md bg-[#f0f4e9] px-2 py-1 text-[10px] leading-5 text-[#657d4e]">${escape(drivingSummary(day.id))}</span>${day.id === 2 ? '<span class="mt-1 text-[9px] leading-4 text-[#817047]">胡杨林定位待确认</span>' : ''}</a>`).join('')}</div>

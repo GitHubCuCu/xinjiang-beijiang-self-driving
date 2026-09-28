@@ -25,6 +25,7 @@ function cards() {
 }
 export function renderPacking() {
   return `${pageHeading('PACK LIGHT · TRAVEL WELL', '把安心，一件件装好。', '按三大一小、8 天行程整理。按实际使用习惯增减，勾选即自动保存。', `<button data-add class="${buttonClass}">${icon('add-line')} 添加物品</button>`)}
+    ${storage.protected() ? `<section class="mb-5 rounded-xl border border-[#d5bfa0] bg-[#f6f2e5] p-4 text-sm leading-7 text-[#806528]"><h2 class="font-semibold">原始旅行数据已保护</h2><p>当前显示本次会话数据，不会覆盖无法读取的原记录。普通备份仅导出当前会话。请先保存原始文件；确认导入有效备份后才解除写保护。</p>${storage.rawBackup() !== null ? `<button data-export-original class="${softButton} mt-3">导出原始数据（可能含私人信息）</button>` : ''}</section>` : ''}
     <div id="packing-summary" aria-live="polite">${summary()}</div>
     <section class="my-5 rounded-xl border border-[#e3e8d9] bg-white p-4"><div class="flex flex-wrap gap-3"><label class="relative min-w-[180px] flex-1"><span class="absolute left-3 top-2.5 text-[#a0ac92]">${icon('search-line')}</span><input id="packing-search" type="search" aria-label="搜索物品" placeholder="搜索物品，比如：羽绒服、证件…" value="${escape(filters.query)}" class="${inputClass} pl-9 placeholder:text-[#adb69e]"></label><select id="packing-owner" aria-label="按使用人筛选" class="${inputClass} w-auto"><option value="all">所有成员</option>${['全家', '成人', '宝宝', '长辈'].map(owner => `<option ${filters.owner === owner ? 'selected' : ''}>${owner}</option>`).join('')}</select><select id="packing-status" aria-label="按准备状态筛选" class="${inputClass} w-auto">${[['all', '全部状态'], ['todo', '尚未准备'], ['done', '已经准备'], ['essential', '重点物品']].map(([value, label]) => `<option value="${value}" ${filters.status === value ? 'selected' : ''}>${label}</option>`).join('')}</select></div>
     <div class="mt-4 flex flex-wrap gap-2" role="group" aria-label="物品分类">${[{ id: 'all', name: '全部清单', icon: 'apps-line' }, ...categories].map(category => `<button data-category="${category.id}" aria-pressed="${filters.category === category.id}" class="rounded-lg border px-3 py-2 text-[10px] ${filters.category === category.id ? 'border-[#829d6c] bg-[#eaf1df] text-[#5e7a45]' : 'border-[#e8ecdf] bg-white text-[#9aa58c] hover:bg-[#f5f8ee]'}">${icon(category.icon, 'mr-1')} ${category.name}</button>`).join('')}</div></section>
@@ -68,9 +69,12 @@ export function bindPacking(root, rerender) {
       });
     });
   });
-  root.querySelector('[data-reset]').addEventListener('click', () => confirmModal('重新开始整理行李？', '所有物品会变回未勾选。自定义物品、每日备注、出发日期和联系人都会保留。建议先导出备份。', () => { storage.reset(); redraw(); toast('已重置勾选状态'); }, '重置全部勾选'));
+  root.querySelector('[data-reset]').addEventListener('click', () => confirmModal('重新开始整理行李？', '仅重置行李勾选。自定义物品、每日备注、日期、联系人和全部冒险进度都会保留，不解除原数据写保护。', () => { storage.reset(); redraw(); toast(storage.available() ? '已重置行李勾选' : '仅在当前会话重置，尚未保存'); }, '重置行李勾选'));
   root.querySelector('[data-export]').addEventListener('click', () => {
-    confirmModal('导出旅行备份', '备份包含清单、每日备注、出发日期和联系人。请妥善保管，仅分享给可信赖的同行人。', () => { download('北疆慢游记-旅行备份.json', JSON.stringify(storage.get(), null, 2), 'application/json'); toast('备份已导出'); }, '导出备份');
+    confirmModal('导出旅行备份', '备份包含清单、每日备注、日期、联系人及冒险进度，可能含私人信息。新版备份不保证可被旧版网站读取；写保护期间仅导出当前会话。请妥善保管。', () => { download('北疆慢游记-旅行备份.json', JSON.stringify(storage.get(), null, 2), 'application/json'); toast('当前旅行数据已导出'); }, '导出备份');
+  });
+  root.querySelector('[data-export-original]')?.addEventListener('click', () => {
+    confirmModal('保存原始旅行数据？', '原始文件未经修复，可能包含联系人与私人备注。仅保存在你的设备上，不上传；请勿随意分享。', () => { const raw = storage.rawBackup(); if (raw !== null) download('北疆慢游记-原始数据.txt', raw, 'text/plain;charset=utf-8'); }, '保存原始文件');
   });
   const fileInput = root.querySelector('#backup-file');
   root.querySelector('[data-import]').addEventListener('click', () => fileInput.click());
@@ -78,8 +82,12 @@ export function bindPacking(root, rerender) {
     const file = fileInput.files?.[0]; if (!file) return;
     try {
       if (file.size > 1024 * 1024) throw new Error('备份文件不能大于 1 MB');
+      if (!/^[^\u0000/\\]+\.json$/i.test(file.name) || (file.type && !['application/json', 'text/json', 'text/plain'].includes(file.type))) throw new Error('请选择 JSON 备份文件');
       const data = validateState(JSON.parse(await file.text()));
-      confirmModal('用备份替换当前旅行数据？', '导入将替换当前勾选、自定义物品、备注、日期和联系人。该操作不能撤销，建议先导出当前备份。', () => { storage.replace(data); Object.assign(filters, { query: '', category: 'all', owner: 'all', status: 'all' }); rerender(false); toast('备份已恢复'); }, '确认导入');
+      confirmModal('用备份替换当前旅行数据？', '将整体替换清单、备注、日期、联系人和冒险进度，并解除原数据写保护。旧版备份会把冒险进度置空。请先导出当前及受保护的原始数据；不会与现有记录合并。', () => {
+        try { storage.replace(data); Object.assign(filters, { query: '', category: 'all', owner: 'all', status: 'all' }); rerender(false); toast('备份已恢复并保存'); }
+        catch { toast('无法保存备份，原数据未替换，请保留备份文件'); }
+      }, '确认替换并保存');
     } catch (error) { toast(error instanceof SyntaxError ? '文件不是有效的 JSON 备份' : error.message); }
     finally { fileInput.value = ''; }
   });

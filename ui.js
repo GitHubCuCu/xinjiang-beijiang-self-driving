@@ -9,6 +9,7 @@ export const panelClass = 'rounded-2xl border border-[#e5e9df] bg-white';
 const nav = [
   { id: 'overview', label: '旅行总览', small: '我们的金秋假期', icon: 'dashboard-line' },
   { id: 'itinerary', label: '每日行程', small: '8 天，一路向秋', icon: 'route-line' },
+  { id: 'adventure', label: '历史冒险', small: '每一站，都有来处', icon: 'book-open-line' },
   { id: 'packing', label: '行前清单', small: '把安心装进行李', icon: 'suitcase-2-line' },
   { id: 'guide', label: '安心出行', small: '给一家人的小叮咛', icon: 'shield-check-line' }
 ];
@@ -43,7 +44,7 @@ export function shell(page, content) {
     <header class="flex min-h-[76px] flex-wrap items-center justify-between gap-3 border-b border-[#e6e9e1] bg-[#fcfcf8]/90 px-5 py-4 sm:px-8 print:hidden">
       <div class="flex items-center gap-3 text-xs"><a href="#overview" class="flex items-center gap-2 font-semibold lg:hidden">${icon('landscape-line', 'text-xl text-[#416845]')}北疆慢游记</a><span class="hidden text-[#99a08f] lg:inline">我们的旅行</span><span class="text-[#c5ccbc]">/</span><span class="text-[#607154]">${active.label}</span></div>
       <div class="flex items-center gap-4"><span data-save-status class="hidden items-center gap-1.5 text-[11px] text-[#8a967f] sm:flex">${icon('cloud-line')} 保存在当前浏览器</span><button data-action="settings" class="flex items-center gap-2 rounded-lg border border-[#e2e7d8] bg-[#f6f8ed] px-3 py-2 text-[11px] text-[#70805c]">${icon('calendar-2-line')} ${dateRange()}</button></div>
-      <nav aria-label="移动端导航" class="-mb-1 grid w-full grid-cols-4 gap-1 pt-2 lg:hidden">${nav.map(item => `<a href="#${item.id}" ${item.id === page ? 'aria-current="page"' : ''} class="flex items-center justify-center gap-1.5 rounded-lg py-2.5 text-[11px] sm:text-xs ${item.id === page ? 'bg-[#eaf0df] font-semibold text-[#3c5d35]' : 'text-[#8a947e]'}">${icon(item.icon)}${item.label}</a>`).join('')}</nav>
+      <nav aria-label="移动端导航" class="-mb-1 grid w-full grid-cols-5 gap-0.5 pt-2 lg:hidden">${nav.map(item => `<a href="#${item.id}" ${item.id === page ? 'aria-current="page"' : ''} class="flex min-h-11 items-center justify-center gap-1 rounded-lg px-0.5 py-2.5 text-[10px] leading-4 sm:gap-1.5 sm:text-xs ${item.id === page ? 'bg-[#eaf0df] font-semibold text-[#3c5d35]' : 'text-[#8a947e]'}">${icon(item.icon)}<span class="truncate">${item.label}</span></a>`).join('')}</nav>
     </header>
     <main id="main" class="mx-auto w-full max-w-[1800px] px-5 py-7 sm:px-8 sm:py-8">${content}</main>
     <footer class="mx-5 mt-3 border-t border-[#e1e6d9] py-5 text-center text-[11px] leading-6 text-[#a0a894] sm:mx-8"><p class="mb-1">三大一小的金秋回忆 · 按附件整理，开放、天气及预订以出发前确认为准</p><p>由 AI 通过自然语言生成</p></footer>
@@ -67,7 +68,7 @@ export function openModal(title, body, afterOpen) {
   dialog.addEventListener('cancel', event => { event.preventDefault(); close(); });
   dialog.addEventListener('click', event => { if (event.target === dialog) { const rect = dialog.getBoundingClientRect(); if (event.clientX < rect.left || event.clientX > rect.right || event.clientY < rect.top || event.clientY > rect.bottom) close(); } });
   dialog.showModal();
-  afterOpen?.(dialog, close);
+  try { afterOpen?.(dialog, close); } catch (error) { close(); throw error; }
 }
 export function confirmModal(title, text, onConfirm, label = '确认') {
   openModal(title, `<p class="text-sm leading-7 text-[#7c8874]">${text}</p><div class="mt-6 flex justify-end gap-3"><button type="button" data-close class="${softButton}">取消</button><button type="button" data-confirm class="${buttonClass}">${label}</button></div>`, (dialog, close) => {

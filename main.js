@@ -1,34 +1,37 @@
 import { sources } from './data.js';
-import { storage } from './store.js';
+import { storage, STORAGE_KEY } from './store.js';
 import { shell, icon, openModal, toast, escape, inputClass, softButton, buttonClass } from './ui.js';
 import { renderOverview } from './overview.js';
-import { renderItinerary, bindItinerary } from './itinerary.js';
+import { renderItinerary, bindItinerary, renderAdventure, bindAdventure } from './itinerary.js';
 import { renderPacking, bindPacking } from './packing.js';
 import { renderGuide } from './guide.js';
 
-const pages = new Set(['overview', 'itinerary', 'packing', 'guide']);
-const titles = { overview: '旅行总览', itinerary: '每日行程', packing: '行前清单', guide: '安心出行' };
+const pages = new Set(['overview', 'itinerary', 'adventure', 'packing', 'guide']);
+const titles = { overview: '旅行总览', itinerary: '每日行程', adventure: '历史冒险', packing: '行前清单', guide: '安心出行' };
 const app = document.querySelector('#app');
+const validDay = value => /^[1-8]$/.test(String(value ?? ''));
 function currentRoute() {
-  const [requested, requestedDay] = location.hash.slice(1).split('/');
+  const [requested, requestedDay] = String(location.hash.slice(1)).split('/');
   const page = pages.has(requested) ? requested : 'overview';
-  const day = Math.max(1, Math.min(8, Number(requestedDay) || 1));
-  return { page, day, explicit: Boolean(requestedDay) };
+  const explicit = validDay(requestedDay);
+  return { page, day: explicit ? Number(requestedDay) : 1, explicit };
 }
 function render(scroll = true) {
   const { page, day, explicit } = currentRoute();
-  const content = page === 'overview' ? renderOverview() : page === 'itinerary' ? renderItinerary(day) : page === 'packing' ? renderPacking() : renderGuide();
+  const content = page === 'itinerary' ? renderItinerary(day) : page === 'adventure' ? renderAdventure(day) : page === 'packing' ? renderPacking() : page === 'guide' ? renderGuide() : renderOverview();
   app.innerHTML = shell(page, content);
   document.title = `${titles[page]} · 北疆慢游记`;
   const main = app.querySelector('main');
   if (page === 'packing') bindPacking(main, render);
   if (page === 'itinerary') bindItinerary(main);
+  if (page === 'adventure') bindAdventure(main);
+  storage.migrateIfNeeded();
   if (scroll) {
     window.scrollTo({ top: 0, behavior: 'instant' });
-    if (page === 'itinerary' && explicit) requestAnimationFrame(() => {
-      const card = app.querySelector(`[data-day="${day}"]`);
+    if ((page === 'itinerary' || page === 'adventure') && explicit) requestAnimationFrame(() => {
+      const card = page === 'itinerary' ? app.querySelector(`[data-day="${day}"]`) : app.querySelector('[data-adventure-day]');
       card?.scrollIntoView({ behavior: 'smooth', block: 'start' });
-      card?.querySelector('summary').focus({ preventScroll: true });
+      (page === 'itinerary' ? card?.querySelector('summary') : app.querySelector('#adventure-chapter-title'))?.focus({ preventScroll: true });
     });
     else document.querySelector('#page-title')?.focus({ preventScroll: true });
   }
@@ -59,7 +62,7 @@ document.addEventListener('click', event => {
   const action = event.target.closest('[data-action]');
   if (action?.dataset.action === 'settings') settings();
   if (action?.dataset.action === 'source') source(Number(action.dataset.source));
-  const anchor = event.target.closest('a[href^="#itinerary/"]');
+  const anchor = event.target.closest('a[href^="#itinerary/"], a[href^="#adventure/"]');
   if (anchor && anchor.getAttribute('href') === location.hash) { event.preventDefault(); render(true); }
 });
 let saveErrorShown = false;
@@ -70,7 +73,7 @@ window.addEventListener('trip-saved', event => {
 });
 window.addEventListener('hashchange', () => render(true));
 window.addEventListener('storage', event => {
-  if (event.key === 'north-xinjiang-family-v1') toast('另一标签页修改了旅行数据，刷新后可读取最新内容');
+  if (event.key === STORAGE_KEY) toast('另一标签页修改了旅行数据，刷新后可读取最新内容');
 });
 render(false);
 if (storage.warning()) toast(storage.warning());
